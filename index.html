@@ -1,1 +1,1238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>Neo Ludo — Futuristic Multiplayer</title>
+<style>
+  :root{
+    --bg: #0b0f18;
+    --panel: rgba(18,22,33,0.7);
+    --panel-strong: rgba(18,22,33,0.92);
+    --text: #e8f0ff;
+    --muted: #9aa4b2;
+    --accent: #00e5ff;
+    --accent-2: #7c4dff;
+    --danger: #ff4d6d;
+    --ok: #00e676;
+    --chip: rgba(255,255,255,0.06);
+    --ring: 0 0 0 2px rgba(0,229,255,0.35) inset, 0 0 0 1px rgba(255,255,255,0.06) inset;
+    --shadow: 0 10px 30px rgba(0,0,0,0.45);
+    --btn-bg: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    --btn-hover: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+  }
+  [data-theme="light"]{
+    --bg: #f5f7fb;
+    --panel: rgba(255,255,255,0.7);
+    --panel-strong: rgba(255,255,255,0.92);
+    --text: #0b0f18;
+    --muted: #4b5563;
+    --accent: #0066ff;
+    --accent-2: #6a00ff;
+    --danger: #e53935;
+    --ok: #00a152;
+    --chip: rgba(0,0,0,0.06);
+    --ring: 0 0 0 2px rgba(0,102,255,0.35) inset, 0 0 0 1px rgba(0,0,0,0.06) inset;
+    --shadow: 0 12px 30px rgba(0,0,0,0.12);
+  }
+
+  *{ box-sizing:border-box; }
+  html, body{ height:100%; }
+  body{
+    margin:0; color:var(--text);
+    background:
+      radial-gradient(1200px 700px at 75% -10%, rgba(0,229,255,0.12), transparent 60%),
+      radial-gradient(900px 700px at 10% 110%, rgba(124,77,255,0.12), transparent 60%),
+      var(--bg);
+    font: 14px/1.4 "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, "Noto Sans";
+    overflow:hidden;
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  }
+
+  .app{
+    height:100%; padding:10px; display:grid; gap:10px;
+    grid-template-rows: 64px 1fr 40px;
+    grid-template-columns: 300px 1fr 320px;
+  }
+  @media (max-width:1200px){
+    .app{ grid-template-columns: 300px 1fr; grid-template-rows: 64px auto auto 40px; }
+    .right{ grid-column: 1 / -1; }
+  }
+
+  .bar{
+    grid-column: 1 / -1; display:flex; align-items:center; justify-content:space-between;
+    background: var(--panel-strong); backdrop-filter: blur(10px) saturate(120%);
+    border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:10px 12px; box-shadow:var(--shadow);
+  }
+  .brand{
+    display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.3px;
+  }
+  .logo{
+    width:32px; height:32px; border-radius:10px;
+    background: conic-gradient(from 220deg, var(--accent), var(--accent-2), var(--accent));
+    box-shadow: 0 0 18px rgba(0,229,255,0.45);
+  }
+  .group{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+
+  .btn{
+    display:inline-grid; grid-auto-flow:column; gap:6px; place-items:center;
+    padding:9px 12px; color:var(--text); background:var(--btn-bg);
+    border:1px solid rgba(255,255,255,0.06); border-radius:12px; cursor:pointer;
+    transition:.15s transform, .15s background, .15s box-shadow;
+  }
+  .btn:hover{ background:var(--btn-hover); transform:translateY(-1px); }
+  .btn:active{ transform:translateY(0); }
+  .btn.primary{ box-shadow: var(--ring); }
+  .field{
+    display:flex; align-items:center; gap:8px; background:var(--panel);
+    border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:8px 10px;
+  }
+  .field input, .field select{
+    background:transparent; border:none; color:var(--text); outline:none; min-width: 120px;
+  }
+  .toggle{
+    width:50px; height:30px; border-radius:999px; background:var(--btn-bg);
+    border:1px solid rgba(255,255,255,0.1); position:relative; cursor:pointer; padding:3px;
+  }
+  .toggle .dot{ width:24px; height:24px; border-radius:999px; background:#fff; box-shadow:var(--ring); transform:translateX(0); transition:.2s; }
+  [data-theme="light"] .toggle .dot{ transform: translateX(20px); }
+
+  .left, .right{
+    background: var(--panel); backdrop-filter: blur(10px) saturate(120%);
+    border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:12px; box-shadow:var(--shadow);
+    overflow:auto;
+  }
+
+  .section{ margin-bottom:12px; }
+  .section h3{ margin:0 0 8px; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.12em; }
+  .list{ display:flex; flex-direction:column; gap:8px; }
+  .chip{
+    padding:8px 10px; border-radius:10px; background:var(--chip);
+    border:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
+  .row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+
+  .board-wrap{
+    position:relative; border-radius:16px; border:1px solid rgba(255,255,255,0.06);
+    background:
+      radial-gradient(400px 200px at 10% 10%, rgba(0,229,255,0.08), transparent 60%),
+      radial-gradient(400px 200px at 90% 90%, rgba(124,77,255,0.08), transparent 60%),
+      linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  #board{ width:100%; height:100%; display:block; }
+  .hud{
+    position:absolute; left:12px; top:12px; right:12px; display:flex; align-items:center; justify-content:space-between; pointer-events:none;
+  }
+  .badge{ pointer-events:auto; padding:6px 10px; border-radius:10px; background:var(--chip); color:var(--muted); font-weight:700; }
+  .dice-btn{ pointer-events:auto; }
+
+  .status{
+    grid-column:1 / -1; background:var(--panel); backdrop-filter: blur(10px) saturate(120%);
+    border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:8px 12px; display:flex;
+    align-items:center; justify-content:space-between;
+  }
+  .mono{ font: 600 12px ui-monospace, SFMono-Regular, Menlo, Consolas; color:var(--muted); }
+
+  /* Modals */
+  .modal{
+    position:fixed; inset:0; display:none; place-items:center; background: rgba(0,0,0,0.4); z-index:50;
+  }
+  .modal .card{
+    background: var(--panel-strong); border:1px solid rgba(255,255,255,0.08); border-radius:14px;
+    padding:16px; width:min(92vw, 420px); box-shadow: var(--shadow);
+  }
+  .modal.show{ display:grid; }
+
+  /* Player colors */
+  .dot{ width:12px; height:12px; border-radius:999px; display:inline-block; }
+  .c0{ background:#29c241; } /* Green */
+  .c1{ background:#e53935; } /* Red */
+  .c2{ background:#007bff; } /* Blue */
+  .c3{ background:#ffb300; } /* Yellow/Gold */
+
+  .hidden{ display:none !important; }
+</style>
+</head>
+<body data-theme="dark">
+  <div class="app">
+    <!-- TOP BAR -->
+    <div class="bar">
+      <div class="group">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div>Neo Ludo <small style="color:var(--muted); font-weight:600">Beta</small></div>
+        </div>
+        <div class="field">
+          <span style="color:var(--muted)">Name</span>
+          <input id="playerName" type="text" placeholder="Enter your name" maxlength="16">
+          <button class="btn" id="signInBtn" title="Enable Online">Enable Online</button>
+        </div>
+        <button class="btn primary" id="localBtn">Play Local</button>
+        <button class="btn" id="aiBtn">Play vs AI</button>
+
+        <div class="group" id="onlineBtns" style="display:none">
+          <button class="btn" id="createRoomBtn">Create Private Room</button>
+          <button class="btn" id="quickMatchBtn">Quick Match</button>
+          <span class="mono" id="roomLink" style="display:none"></span>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="btn" id="themeToggle" title="Toggle theme">
+          <div class="toggle"><div class="dot"></div></div>
+        </div>
+        <div class="badge" id="presenceBadge">Offline</div>
+      </div>
+    </div>
+
+    <!-- LEFT: LOBBY / ONLINE LIST -->
+    <div class="left">
+      <div class="section">
+        <h3>Online Players</h3>
+        <div class="list" id="playersList">
+          <div class="chip">Online is disabled. Click <b>Enable Online</b> after entering your name.</div>
+        </div>
+      </div>
+      <div class="section">
+        <h3>How to Invite</h3>
+        <div class="chip">
+          1) Click <b>Create Private Room</b> → Copy link → Share with your friend.<br>
+          2) Or click a player → <b>Challenge</b>. They’ll get a popup to accept.
+        </div>
+      </div>
+      <div class="section">
+        <h3>Rules (Quick)</h3>
+        <div class="list">
+          <div class="chip">Roll a <b>6</b> to bring a token out. <b>6</b> gives an extra roll (three 6s in a row ends your turn).</div>
+          <div class="chip">Land on an opponent (not on a safe tile) to <b>capture</b> and send them to base.</div>
+          <div class="chip">Move into your <b>home lane</b> and reach the end with an <b>exact roll</b> to finish a token.</div>
+          <div class="chip">First to <b>finish all 4</b> tokens wins. Safe tiles are the 4 colored entries + marked stars.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTER: BOARD -->
+    <div class="board-wrap">
+      <canvas id="board"></canvas>
+      <div class="hud">
+        <div class="badge" id="turnBadge">—</div>
+        <div class="group">
+          <button class="btn dice-btn" id="rollBtn">Roll 🎲</button>
+          <div class="badge" id="diceBadge">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: INFO -->
+    <div class="right">
+      <div class="section">
+        <h3>Match</h3>
+        <div class="list">
+          <div class="chip">Mode: <b id="modeLabel">—</b></div>
+          <div class="chip">Players: <span id="playersLabel">—</span></div>
+          <div class="chip">Turn: <span id="turnLabel">—</span></div>
+          <div class="chip">Hint: <span id="hintLabel">Click a token to move</span></div>
+        </div>
+      </div>
+      <div class="section">
+        <h3>Options</h3>
+        <div class="row">
+          <label class="chip"><input type="checkbox" id="toggleSafe" checked> Show safe stars</label>
+          <label class="chip"><input type="checkbox" id="allowBlock" > Blockade rule (two same color block)</label>
+          <label class="chip"><input type="checkbox" id="soundFx" checked> Sounds</label>
+        </div>
+      </div>
+      <div class="section">
+        <h3>How to Play Online</h3>
+        <div class="list">
+          <div class="chip">Enter your name → <b>Enable Online</b> → Use player list or private link.</div>
+          <div class="chip">Online uses Firebase Anonymous Auth + Realtime DB. No server needed.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUS BAR -->
+    <div class="status">
+      <div class="mono" id="statusLeft">Ready.</div>
+      <div class="mono" id="statusRight">© Neo Ludo</div>
+    </div>
+  </div>
+
+  <!-- Challenge Modal -->
+  <div class="modal" id="challengeModal">
+    <div class="card">
+      <div style="font-size:16px; font-weight:700; margin-bottom:6px">Challenge</div>
+      <div id="challengeText" style="margin-bottom:10px"></div>
+      <div class="row" style="justify-content:flex-end">
+        <button class="btn" id="declineBtn">Decline</button>
+        <button class="btn primary" id="acceptBtn">Accept</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ========= THEME =========
+  const themeToggle = document.getElementById('themeToggle');
+  themeToggle.addEventListener('click', ()=> {
+    const light = document.body.getAttribute('data-theme')==='light';
+    document.body.setAttribute('data-theme', light? 'dark':'light');
+  });
+
+  // ========= ELEMENTS =========
+  const board = document.getElementById('board');
+  const ctx = board.getContext('2d');
+  const turnBadge = document.getElementById('turnBadge');
+  const diceBadge = document.getElementById('diceBadge');
+  const rollBtn = document.getElementById('rollBtn');
+  const modeLabel = document.getElementById('modeLabel');
+  const playersLabel = document.getElementById('playersLabel');
+  const turnLabel = document.getElementById('turnLabel');
+  const hintLabel = document.getElementById('hintLabel');
+  const statusLeft = document.getElementById('statusLeft');
+  const presenceBadge = document.getElementById('presenceBadge');
+  const playersList = document.getElementById('playersList');
+  const toggleSafe = document.getElementById('toggleSafe');
+  const allowBlock = document.getElementById('allowBlock');
+  const soundFx = document.getElementById('soundFx');
+
+  const localBtn = document.getElementById('localBtn');
+  const aiBtn = document.getElementById('aiBtn');
+  const signInBtn = document.getElementById('signInBtn');
+  const playerNameInput = document.getElementById('playerName');
+  const onlineBtns = document.getElementById('onlineBtns');
+  const createRoomBtn = document.getElementById('createRoomBtn');
+  const quickMatchBtn = document.getElementById('quickMatchBtn');
+  const roomLinkEl = document.getElementById('roomLink');
+
+  const challengeModal = document.getElementById('challengeModal');
+  const challengeText = document.getElementById('challengeText');
+  const acceptBtn = document.getElementById('acceptBtn');
+  const declineBtn = document.getElementById('declineBtn');
+
+  // ========= SOUNDS =========
+  const S = {
+    roll: new Audio('data:audio/wav;base64,UklGRmQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABYAAAChAAAAAAA...'), // (tiny placeholder removed for brevity)
+    move: new Audio('data:audio/wav;base64,UklGRmQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABYAAAChAAAAAAA...'),
+    capture: new Audio('data:audio/wav;base64,UklGRmQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABYAAAChAAAAAAA...'),
+    win: new Audio('data:audio/wav;base64,UklGRmQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABYAAAChAAAAAAA...')
+  };
+  // In case autoplay blocked
+  Object.values(S).forEach(a=>{ a.volume=0.4; a.load?.(); });
+
+  // ========= BOARD GEOMETRY (52-track + 6 home) =========
+  // We implement a clean rectangular loop: 52 nodes around a rounded-rectangle track (13 per side).
+  // Each color has startIndex spaced by 13: G=0, R=13, B=26, Y=39.
+  // Home lane: 6 steps towards center for each color when steps>=52.
+  const COLORS = ['#29c241', '#e53935', '#007bff', '#ffb300']; // G, R, B, Y
+  const COLORNAMES = ['Green','Red','Blue','Yellow'];
+  const SAFE_INDEXES_BASE = [0, 13, 26, 39]; // starts are safe
+  const SAFE_EXTRA = [5, 18, 31, 44]; // star tiles also safe (one per side)
+  let geom = null; // computed on resize
+
+  function computeGeom(){
+    const rect = board.parentElement.getBoundingClientRect();
+    board.width = Math.floor(rect.width * devicePixelRatio);
+    board.height = Math.floor(rect.height * devicePixelRatio);
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    const W = rect.width, H = rect.height;
+    const pad = Math.min(W,H)*0.08;
+    const left = pad, right = W-pad, top = pad, bottom = H-pad;
+    const side = { top, right, bottom, left };
+    const perSide = 13;
+    const path = [];
+    // top: left -> right
+    for(let i=0;i<perSide;i++){
+      const t = i/(perSide-1);
+      path.push({ x: lerp(left, right, t), y: top });
+    }
+    // right: top -> bottom
+    for(let i=1;i<perSide;i++){
+      const t = i/(perSide-1);
+      path.push({ x: right, y: lerp(top, bottom, t) });
+    }
+    // bottom: right -> left
+    for(let i=1;i<perSide;i++){
+      const t = i/(perSide-1);
+      path.push({ x: lerp(right, left, t), y: bottom });
+    }
+    // left: bottom -> top
+    for(let i=1;i<perSide-1;i++){
+      const t = i/(perSide-1);
+      path.push({ x: left, y: lerp(bottom, top, t) });
+    }
+    // Now path length should be 52
+    // Home lanes towards center
+    const cx = (left+right)/2, cy=(top+bottom)/2;
+    const home = [];
+    for(let p=0;p<4;p++){
+      const startIdx = p*13;
+      const entry = path[startIdx]; // player's start tile
+      const v = unit({x: cx-entry.x, y: cy-entry.y});
+      const steps = [];
+      for(let k=1;k<=6;k++){
+        steps.push({ x: entry.x + v.x * k *  (Math.min(W,H)*0.04), y: entry.y + v.y * k * (Math.min(W,H)*0.04) });
+      }
+      home.push(steps); // 6 positions, index 0..5 (52..57 map)
+    }
+    // Bases: four nests near corners
+    const base = [
+      {x: left + (right-left)*0.22, y: bottom - (bottom-top)*0.22}, // Green bottom-left quadrant (to align start on top edge)
+      {x: right - (right-left)*0.22, y: bottom - (bottom-top)*0.22}, // Red
+      {x: right - (right-left)*0.22, y: top + (bottom-top)*0.22},    // Blue
+      {x: left + (right-left)*0.22, y: top + (bottom-top)*0.22},     // Yellow
+    ];
+    // Token parking in base: 4 spots around base center
+    const baseSpots = base.map(c=>{
+      const r = Math.min(W,H)*0.035;
+      return [
+        {x: c.x - r, y: c.y - r},
+        {x: c.x + r, y: c.y - r},
+        {x: c.x - r, y: c.y + r},
+        {x: c.x + r, y: c.y + r}
+      ];
+    });
+
+    geom = { W,H, left,right,top,bottom, path, home, base, baseSpots, cx, cy, rNode: Math.min(W,H)*0.018, rToken: Math.min(W,H)*0.022 };
+  }
+  function lerp(a,b,t){ return a + (b-a)*t; }
+  function unit(v){ const m = Math.hypot(v.x,v.y)||1; return {x:v.x/m, y:v.y/m}; }
+  window.addEventListener('resize', ()=>{ const snapshot = snapshotCanvas(); computeGeom(); restoreCanvas(snapshot); render(); });
+  computeGeom();
+
+  function snapshotCanvas(){ try{ return ctx.getImageData(0,0,board.width,board.height); }catch(e){ return null; } }
+  function restoreCanvas(img){ if(img) ctx.putImageData(img,0,0); }
+
+  // ========= GAME STATE =========
+  const MODE = { LOCAL:'Local', AI:'AI', ONLINE:'Online' };
+  const state = {
+    mode: null,
+    players: [], // [{id, name, color:0..3, isAI?:true, uid?}]
+    turnIndex: 0,
+    dice: null,
+    canRoll: true,
+    chainSix: 0,
+    pieces: {}, // playerId -> [steps, steps, steps, steps] where steps: -1 (base) .. 57 (home done)
+    selected: null, // {playerId, pieceIdx}
+    winner: null,
+    roomId: null,
+    online: { enabled:false, uid:null },
+  };
+
+  // Helper: set up players & pieces
+  function setupMatch(kind, players){
+    state.mode = kind;
+    state.players = players;
+    state.turnIndex = 0;
+    state.dice = null;
+    state.canRoll = true;
+    state.chainSix = 0;
+    state.winner = null;
+    state.selected = null;
+    state.pieces = {};
+    for(const p of players){ state.pieces[p.id] = [-1,-1,-1,-1]; }
+    updateSideInfo();
+    render();
+    statusLeft.textContent = `New ${kind} match started.`;
+  }
+
+  // ========= LOCAL & AI STARTERS =========
+  localBtn.addEventListener('click', async ()=> {
+    const names = await promptPlayers();
+    if(!names) return;
+    const players = names.map((n,i)=> ({ id:`P${i}`, name:n, color:i }));
+    setupMatch(MODE.LOCAL, players);
+  });
+
+  aiBtn.addEventListener('click', ()=> {
+    const me = playerNameInput.value.trim() || 'You';
+    const players = [
+      { id:'P0', name: me, color: 0 },
+      { id:'P1', name: 'AI-λ', color: 2, isAI:true }
+    ];
+    setupMatch(MODE.AI, players);
+  });
+
+  function promptPlayers(){
+    return new Promise(resolve=>{
+      const count = prompt('How many players? (2-4)', '2');
+      if(!count) return resolve(null);
+      const n = Math.max(2, Math.min(4, parseInt(count)||2));
+      const arr = [];
+      for(let i=0;i<n;i++){
+        const name = prompt(`Name for Player ${i+1} (${COLORNAMES[i]})`, i===0 ? (playerNameInput.value.trim()||'Player 1') : `Player ${i+1}`);
+        arr.push((name||`Player ${i+1}`) + ` (${COLORNAMES[i]})`);
+      }
+      resolve(arr);
+    });
+  }
+
+  // ========= BOARD RENDERING =========
+  function render(){
+    if(!geom) return;
+    const {W,H,path,home,cx,cy,rNode,rToken} = geom;
+    ctx.clearRect(0,0,W,H);
+
+    // Background lanes
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = Math.max(2, rNode*0.9);
+    ctx.lineJoin='round'; ctx.lineCap='round';
+    ctx.beginPath();
+    for(let i=0;i<path.length;i++){
+      const a = path[i], b = path[(i+1)%path.length];
+      ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+    }
+    ctx.stroke();
+    // Home lanes
+    for(let p=0;p<4;p++){
+      ctx.strokeStyle = hexA(COLORS[p],0.45);
+      ctx.beginPath();
+      const entry = coordForTrack((p*13)%52);
+      ctx.moveTo(entry.x, entry.y);
+      for(const h of home[p]){ ctx.lineTo(h.x, h.y); }
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // Safe tiles
+    if(toggleSafe.checked){
+      ctx.save();
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      for(const idx of SAFE_INDEXES_BASE.concat(SAFE_EXTRA)){
+        const c = coordForTrack(idx);
+        drawStar(c.x, c.y, rNode*0.9, 5);
+      }
+      ctx.restore();
+    }
+
+    // Draw nodes
+    ctx.save();
+    for(let i=0;i<path.length;i++){
+      const c = path[i];
+      ctx.beginPath();
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.arc(c.x,c.y,rNode,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+
+    // Draw homes end (center)
+    ctx.save();
+    ctx.globalAlpha = 0.9;
+    for(let p=0;p<4;p++){
+      const end = home[p][5];
+      ctx.fillStyle = hexA(COLORS[p],0.35);
+      ctx.beginPath(); ctx.arc(end.x, end.y, rNode*1.1, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+
+    // Draw tokens
+    const occ = occupancy();
+    for(const P of state.players){
+      const pcs = state.pieces[P.id];
+      for(let k=0;k<4;k++){
+        const s = pcs[k];
+        const coord = coordForPiece(P.color, s, k);
+        drawToken(coord.x, coord.y, P.color, occ, P.id, k);
+      }
+    }
+
+    // Turn / Dice
+    const T = state.players[state.turnIndex];
+    turnBadge.innerHTML = state.winner
+      ? `🏆 ${state.winner.name} wins!`
+      : (T ? `<span class="dot c${T.color}"></span> Turn: <b>${T.name}</b>` : '—');
+    diceBadge.textContent = state.dice===null ? '—' : `🎲 ${state.dice}`;
+    turnLabel.textContent = T ? `${T.name}` : '—';
+    modeLabel.textContent = state.mode || '—';
+    playersLabel.textContent = state.players.map(p=> `${p.name}`).join(', ') || '—';
+  }
+
+  function drawToken(x,y,colorIdx, occ, pid, idx){
+    const {rToken} = geom;
+    const fill = COLORS[colorIdx];
+    ctx.save();
+    // slight shadow
+    ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 6;
+    ctx.beginPath(); ctx.arc(x,y,rToken,0,Math.PI*2); ctx.fillStyle = fill; ctx.fill();
+    // outline
+    ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.stroke();
+    // selection halo
+    if(state.selected && state.selected.playerId===pid && state.selected.pieceIdx===idx){
+      ctx.beginPath(); ctx.arc(x,y,rToken+4,0,Math.PI*2);
+      ctx.strokeStyle = 'rgba(0,229,255,0.8)'; ctx.lineWidth = 3; ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawStar(x,y,r,spikes){
+    ctx.beginPath();
+    for(let i=0;i<spikes*2;i++){
+      const ang = (Math.PI/spikes)*i - Math.PI/2;
+      const rad = i%2===0 ? r : r*0.5;
+      ctx.lineTo(x + Math.cos(ang)*rad, y + Math.sin(ang)*rad);
+    }
+    ctx.closePath(); ctx.fill();
+  }
+
+  function hexA(hex, a){
+    const c = hex.replace('#','');
+    const r = parseInt(c.slice(0,2),16), g=parseInt(c.slice(2,4),16), b=parseInt(c.slice(4,6),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  // ========= COORDINATES =========
+  function coordForTrack(idx){
+    return geom.path[(idx%52+52)%52];
+    // returns {x,y}
+  }
+  // steps: -1 (base) .. 57 (home done)
+  function coordForPiece(colorIdx, steps, pieceIdx){
+    if(steps<0){
+      // base spots
+      return geom.baseSpots[colorIdx][pieceIdx];
+    }
+    if(steps<=51){
+      const trackIdx = (colorIdx*13 + steps) % 52;
+      return coordForTrack(trackIdx);
+    }
+    if(steps<=57){
+      const laneIdx = steps-52; // 0..5
+      return geom.home[colorIdx][laneIdx];
+    }
+    // done
+    return geom.home[colorIdx][5];
+  }
+
+  // ========= INPUT: CLICK TO MOVE =========
+  board.addEventListener('click', onBoardClick);
+  function onBoardClick(e){
+    if(state.winner) return;
+    const rect = board.getBoundingClientRect();
+    const x = (e.clientX - rect.left);
+    const y = (e.clientY - rect.top);
+    const me = state.players[state.turnIndex];
+    if(!me) return;
+
+    // If AI's turn or cannot roll and no dice, ignore
+    if(me.isAI) return;
+
+    // If no dice yet, roll first
+    if(state.dice===null){ blink(rollBtn); return; }
+
+    // Find my nearest token under click
+    const idx = pickToken(me, x,y);
+    if(idx<0) return;
+    tryMove(me, idx, state.dice, {local:true});
+  }
+  function pickToken(player, x,y){
+    const {rToken} = geom;
+    const pcs = state.pieces[player.id];
+    for(let i=0;i<4;i++){
+      const c = coordForPiece(player.color, pcs[i], i);
+      if(Math.hypot(c.x-x, c.y-y) <= rToken*1.2) return i;
+    }
+    return -1;
+  }
+
+  // ========= RULES & MOVES =========
+  function legalMoves(player, dice){
+    const pcs = state.pieces[player.id];
+    const moves = [];
+    for(let i=0;i<4;i++){
+      const s = pcs[i];
+      if(s===57) continue; // finished
+      if(s<0){
+        if(dice===6){
+          // can enter if start not blocked by own blockade (if enabled)
+          if(!blockedOnEnter(player)) moves.push({piece:i, from:s, to:0});
+        }
+        continue;
+      }
+      const to = s + dice;
+      if(to>57) continue; // must be exact
+      if(to<=51){
+        if( pathBlocked(player, s, to) ) continue;
+        moves.push({piece:i, from:s, to});
+      }else{
+        // into home lane
+        moves.push({piece:i, from:s, to});
+      }
+    }
+    return moves;
+  }
+  function blockedOnEnter(player){
+    if(!allowBlock.checked) return false;
+    const startIdx = (player.color*13) % 52;
+    const occ = occupancy();
+    const key = 'T' + startIdx; // Track key
+    const info = occ[key];
+    if(!info) return false;
+    // Blockade if 2+ same player's tokens
+    return info.count>=2 && info.owners[player.id]>=2;
+  }
+  function pathBlocked(player, from, to){
+    if(!allowBlock.checked) return false;
+    // If passing through an opponent blockade, illegal.
+    for(let s=from+1; s<=to; s++){
+      const ti = (player.color*13 + s) % 52;
+      const occ = occupancy()['T'+ti];
+      if(occ && occ.count>=2){
+        const owners = Object.entries(occ.owners);
+        // blockade means at least 2 same owner pieces on that tile
+        for(const [,cnt] of owners){ if(cnt>=2) return true; }
+      }
+    }
+    return false;
+  }
+
+  function tryMove(player, pieceIdx, dice, meta={}){
+    const moves = legalMoves(player, dice);
+    const m = moves.find(m=> m.piece===pieceIdx);
+    if(!m) { statusLeft.textContent = 'No legal move for that token.'; return false; }
+
+    const result = applyMove(player, m, {sync: meta.sync});
+    if(!result) return false;
+
+    // Dice chain rule
+    if(dice===6){
+      state.chainSix++;
+      if(state.chainSix>=3){
+        state.chainSix=0; state.dice=null; nextTurn(); // lose turn
+        return true;
+      }
+      // extra roll
+      state.dice=null; state.canRoll=true; updateSideInfo(); render();
+      maybeAI();
+      return true;
+    }else{
+      state.chainSix=0; state.dice=null; nextTurn(); return true;
+    }
+  }
+
+  function applyMove(player, move, opts={}){
+    const pcs = state.pieces[player.id];
+    // Move
+    pcs[move.piece] = move.to;
+
+    // Capture on landing
+    if(move.to<=51){
+      const tileIdx = (player.color*13 + move.to) % 52;
+      const isSafe = SAFE_INDEXES_BASE.includes(tileIdx) || SAFE_EXTRA.includes(tileIdx);
+      if(!isSafe){
+        for(const enemy of state.players){
+          if(enemy.id===player.id) continue;
+          const epcs = state.pieces[enemy.id];
+          for(let k=0;k<4;k++){
+            if(epcs[k]===57 || epcs[k]<0) continue;
+            const eTile = eTrackIndex(enemy.color, epcs[k]);
+            if(eTile===tileIdx){
+              // captured
+              epcs[k] = -1;
+              if(soundFx.checked) S.capture.play().catch(()=>{});
+            }
+          }
+        }
+      }
+    }
+    // Finish check
+    const won = state.pieces[player.id].every(s=> s===57);
+    if(won){
+      state.winner = player;
+      if(soundFx.checked) S.win.play().catch(()=>{});
+    }else{
+      if(soundFx.checked) S.move.play().catch(()=>{});
+    }
+
+    updateSideInfo(); render();
+    // Sync to online room if needed
+    if(state.mode===MODE.ONLINE && opts.sync!==false){
+      syncGame(); // push state to Firebase
+    }
+    return true;
+  }
+
+  function eTrackIndex(color, steps){ return (color*13 + (steps%52)) % 52; }
+
+  // ========= TURN & DICE =========
+  rollBtn.addEventListener('click', ()=> {
+    if(state.winner) return;
+    if(!state.canRoll) return;
+    const me = state.players[state.turnIndex];
+    if(!me) return;
+    if(soundFx.checked) S.roll.play().catch(()=>{});
+    const d = 1 + Math.floor(Math.random()*6);
+    state.dice = d; state.canRoll=false;
+    diceBadge.textContent = `🎲 ${d}`;
+    const moves = legalMoves(me, d);
+    if(moves.length===0){
+      statusLeft.textContent = `${me.name} has no legal moves.`;
+      if(d===6){
+        // gets another roll but still no moves might happen; chainSix increments even if no move
+        state.chainSix++;
+        if(state.chainSix>=3){
+          state.chainSix=0; state.dice=null; nextTurn();
+        }else{
+          state.dice=null; state.canRoll=true; maybeAI();
+        }
+      }else{
+        state.chainSix=0; state.dice=null; nextTurn();
+      }
+    }else{
+      hintLabel.textContent = 'Click a token to move.';
+      render();
+      maybeAI();
+    }
+    if(state.mode===MODE.ONLINE) syncGame();
+  });
+
+  function nextTurn(){
+    if(state.winner){ render(); return; }
+    state.turnIndex = (state.turnIndex+1) % state.players.length;
+    state.canRoll = true;
+    hintLabel.textContent = 'Roll the dice.';
+    render();
+    maybeAI();
+  }
+
+  // ========= AI =========
+  function maybeAI(){
+    const P = state.players[state.turnIndex];
+    if(!P || !P.isAI || state.winner) return;
+
+    // Roll if needed
+    if(state.dice===null){
+      setTimeout(()=> { if(state.winner) return; rollBtn.click(); }, 500);
+      return;
+    }
+    // Choose best move
+    setTimeout(()=> {
+      const moves = legalMoves(P, state.dice);
+      if(moves.length===0){
+        // handled earlier
+        return;
+      }
+      const best = moves.map(m=> ({m, score: scoreMove(P, m)}))
+                        .sort((a,b)=> b.score-a.score)[0];
+      tryMove(P, best.m.piece, state.dice, {local:true});
+    }, 600);
+  }
+  function scoreMove(P, m){
+    let score = 0;
+    // Finish
+    if(m.to===57) score += 1000;
+    // Enter home lane
+    if(m.from<=51 && m.to>51) score += 200;
+    // Capture potential
+    if(m.to<=51){
+      const tileIdx = (P.color*13 + m.to) % 52;
+      if(!SAFE_INDEXES_BASE.includes(tileIdx) && !SAFE_EXTRA.includes(tileIdx)){
+        for(const E of state.players){
+          if(E.id===P.id) continue;
+          for(const s of state.pieces[E.id]){
+            if(s>=0 && s<=51 && eTrackIndex(E.color, s)===tileIdx) score += 500;
+          }
+        }
+      }
+    }
+    // Prefer advancing (closer to home)
+    score += m.to*2;
+    // Avoid danger: landing where enemy can capture next
+    if(m.to<=51){
+      let danger = 0;
+      for(const E of state.players){
+        if(E.id===P.id) continue;
+        const eMoves = [1,2,3,4,5,6].flatMap(d => legalMovesFor(E, d));
+        const landingIdx = (P.color*13 + m.to) % 52;
+        for(const em of eMoves){
+          if(em.to<=51){
+            const eLanding = (E.color*13 + em.to) % 52;
+            if(eLanding===landingIdx) danger += 80;
+          }
+        }
+      }
+      score -= danger;
+    }
+    return score;
+  }
+  function legalMovesFor(player, dice){
+    const pcs = state.pieces[player.id];
+    const moves = [];
+    for(let i=0;i<4;i++){
+      const s = pcs[i];
+      if(s===57) continue;
+      if(s<0){ if(dice===6 && !blockedOnEnter(player)) moves.push({piece:i, from:s, to:0}); continue; }
+      const to = s + dice; if(to>57) continue;
+      if(to<=51 && pathBlocked(player, s, to)) continue;
+      moves.push({piece:i, from:s, to});
+    }
+    return moves;
+  }
+
+  // ========= OCCUPANCY =========
+  function occupancy(){
+    const map = {};
+    for(const P of state.players){
+      const pcs = state.pieces[P.id];
+      for(let k=0;k<4;k++){
+        const s = pcs[k];
+        if(s<0 || s===57) continue;
+        if(s<=51){
+          const idx = (P.color*13 + s) % 52;
+          const key = 'T'+idx;
+          map[key] = map[key] || {count:0, owners:{}};
+          map[key].count++; map[key].owners[P.id]=(map[key].owners[P.id]||0)+1;
+        }else{
+          const key = 'H'+P.color+'-'+(s-52);
+          map[key] = map[key] || {count:0, owners:{}};
+          map[key].count++; map[key].owners[P.id]=(map[key].owners[P.id]||0)+1;
+        }
+      }
+    }
+    return map;
+  }
+
+  // ========= ONLINE (FIREBASE) =========
+  // Online is optional; if you don't paste config, app runs Local/AI only.
+  let FB = { app:null, db:null, auth:null, connected:false, user:null, listeners:[] };
+
+  async function enableOnline(){
+    const name = playerNameInput.value.trim();
+    if(!name){ alert('Please enter your name'); return; }
+    if(FB.connected){ alert('Online already enabled'); return; }
+    try{
+      // ---- Firebase SDK (Compat) ----
+      // NOTE: If you don't want online, you can skip this block entirely.
+      // TODO: paste your Firebase config here (from Firebase console):
+      const firebaseConfig = {
+        // apiKey: "YOUR_API_KEY",
+        // authDomain: "YOUR_PROJECT.firebaseapp.com",
+        // databaseURL: "https://YOUR_PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
+        // projectId: "YOUR_PROJECT",
+        // storageBucket: "YOUR_PROJECT.appspot.com",
+        // messagingSenderId: "XXXX",
+        // appId: "1:XXXX:web:XXXX"
+      };
+      if(!firebaseConfig.apiKey){
+        alert('Online requires Firebase config. See instructions below the code.');
+        return;
+      }
+      // Load SDKs
+      await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+      await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js');
+      await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js');
+
+      FB.app = firebase.initializeApp(firebaseConfig);
+      FB.auth = firebase.auth();
+      FB.db = firebase.database();
+
+      // Anonymous sign-in
+      const cred = await FB.auth.signInAnonymously();
+      const uid = cred.user.uid;
+      state.online.enabled = true; state.online.uid = uid;
+      FB.user = {uid, name};
+
+      presenceBadge.textContent = 'Online';
+      onlineBtns.style.display = '';
+      playersList.innerHTML = '';
+      statusLeft.textContent = 'Online enabled.';
+
+      // Presence
+      const presenceRef = FB.db.ref('.info/connected');
+      const meRef = FB.db.ref('presence/'+uid);
+      presenceRef.on('value', snap=>{
+        if(snap.val()===true){
+          meRef.onDisconnect().remove();
+          meRef.set({ name, uid, ts: Date.now() });
+        }
+      });
+      // Keep name updated
+      meRef.update({ name });
+
+      // Listen for others
+      const listRef = FB.db.ref('presence');
+      const cb = listRef.on('value', snap=>{
+        const val = snap.val()||{};
+        renderPlayersList(val);
+      });
+      FB.listeners.push({ref:listRef, type:'value', cb});
+
+      // Inbox: challenges
+      const inboxRef = FB.db.ref('inbox/'+uid);
+      const cb2 = inboxRef.on('child_added', snap=>{
+        const msg = snap.val();
+        if(msg && msg.type==='challenge'){
+          showChallenge(msg.fromUid, msg.fromName, msg.roomId, snap.key);
+        }
+      });
+      FB.listeners.push({ref: inboxRef, type:'child_added', cb:cb2});
+
+    }catch(e){
+      console.error(e);
+      alert('Failed to enable online: '+e.message);
+    }
+  }
+  signInBtn.addEventListener('click', enableOnline);
+
+  function renderPlayersList(all){
+    playersList.innerHTML = '';
+    const uid = state.online.uid;
+    const entries = Object.values(all).filter(p=> p.uid!==uid);
+    if(entries.length===0){
+      playersList.innerHTML = '<div class="chip">No one else online yet.</div>';
+      return;
+    }
+    for(const p of entries){
+      const row = document.createElement('div');
+      row.className = 'chip';
+      row.innerHTML = `<div><b>${escapeHtml(p.name)}</b></div>`;
+      const btn = document.createElement('button');
+      btn.className='btn'; btn.textContent = 'Challenge';
+      btn.onclick = ()=> sendChallenge(p.uid, p.name);
+      row.appendChild(btn);
+      playersList.appendChild(row);
+    }
+  }
+
+  function sendChallenge(toUid, toName){
+    const roomId = genId('room');
+    // Create room with pending status
+    const host = FB.user;
+    const roomRef = FB.db.ref('rooms/'+roomId);
+    roomRef.set({
+      createdAt: Date.now(),
+      status: 'pending',
+      players: {
+        [host.uid]: { uid: host.uid, name: host.name, color: 0 }
+      },
+      turnIndex: 0,
+      dice: null,
+      chainSix: 0,
+      state: null
+    });
+    // Send inbox
+    const inboxRef = FB.db.ref('inbox/'+toUid).push();
+    inboxRef.set({
+      type: 'challenge',
+      fromUid: host.uid,
+      fromName: host.name,
+      roomId,
+      ts: Date.now()
+    });
+    statusLeft.textContent = `Challenge sent to ${toName}. Waiting...`;
+
+    // Show link
+    const link = makeRoomLink(roomId);
+    roomLinkEl.style.display='inline-block';
+    roomLinkEl.textContent = link;
+    roomLinkEl.onclick = ()=> { navigator.clipboard.writeText(link); alert('Room link copied'); };
+    watchRoom(roomId);
+  }
+
+  function showChallenge(fromUid, fromName, roomId, inboxKey){
+    challengeText.innerHTML = `<b>${escapeHtml(fromName)}</b> challenged you to play.`;
+    challengeModal.classList.add('show');
+    acceptBtn.onclick = async ()=>{
+      challengeModal.classList.remove('show');
+      // Join room
+      const my = FB.user;
+      const roomRef = FB.db.ref('rooms/'+roomId+'/players/'+my.uid);
+      await roomRef.set({ uid: my.uid, name: my.name, color: 2 });
+      await FB.db.ref('rooms/'+roomId+'/status').set('active');
+      await FB.db.ref('inbox/'+state.online.uid+'/'+inboxKey).remove();
+      joinOnlineRoom(roomId);
+    };
+    declineBtn.onclick = async ()=>{
+      challengeModal.classList.remove('show');
+      await FB.db.ref('inbox/'+state.online.uid+'/'+inboxKey).remove();
+    };
+  }
+
+  function watchRoom(roomId){
+    const roomRef = FB.db.ref('rooms/'+roomId);
+    roomRef.on('value', snap=>{
+      const val = snap.val();
+      if(!val) return;
+      if(val.status==='active'){
+        joinOnlineRoom(roomId);
+      }
+    });
+  }
+
+  createRoomBtn.addEventListener('click', async ()=>{
+    const roomId = genId('room');
+    const host = FB.user;
+    const roomRef = FB.db.ref('rooms/'+roomId);
+    await roomRef.set({
+      createdAt: Date.now(),
+      status: 'waiting',
+      players: {
+        [host.uid]: { uid: host.uid, name: host.name, color: 0 }
+      },
+      turnIndex: 0,
+      dice: null,
+      chainSix: 0,
+      state: null
+    });
+    const link = makeRoomLink(roomId);
+    roomLinkEl.style.display='inline-block';
+    roomLinkEl.textContent = link;
+    roomLinkEl.onclick = ()=> { navigator.clipboard.writeText(link); alert('Room link copied'); };
+    statusLeft.textContent = 'Private room created. Share the link with your friend.';
+    // Wait for second player (auto-activate when >=2)
+    FB.db.ref('rooms/'+roomId+'/players').on('value', async snap=>{
+      const players = snap.val()||{};
+      if(Object.keys(players).length>=2){
+        await FB.db.ref('rooms/'+roomId+'/status').set('active');
+        joinOnlineRoom(roomId);
+      }
+    });
+  });
+
+  quickMatchBtn.addEventListener('click', async ()=>{
+    const my = FB.user;
+    const poolRef = FB.db.ref('matchmaking/pool');
+    const myRef = poolRef.child(my.uid);
+    await myRef.set({ uid: my.uid, name: my.name, ts: Date.now() });
+    myRef.onDisconnect().remove();
+
+    // Try to match with someone else
+    poolRef.once('value', async snap=>{
+      const list = snap.val()||{};
+      const others = Object.values(list).filter(e=> e.uid!==my.uid);
+      if(others.length>0){
+        const partner = others[0];
+        // Create room and invite both
+        const roomId = genId('room');
+        const roomRef = FB.db.ref('rooms/'+roomId);
+        await roomRef.set({
+          createdAt: Date.now(),
+          status: 'active',
+          players: {
+            [my.uid]: { uid: my.uid, name: my.name, color: 0 },
+            [partner.uid]: { uid: partner.uid, name: partner.name, color: 2 }
+          },
+          turnIndex: 0, dice: null, chainSix: 0, state: null
+        });
+        await FB.db.ref('inbox/'+partner.uid).push().set({ type:'autojoin', roomId, fromUid: my.uid, fromName: my.name, ts: Date.now() });
+        joinOnlineRoom(roomId);
+      }else{
+        statusLeft.textContent = 'Waiting for opponent...';
+        poolRef.on('value', async snap2=>{
+          const list2 = snap2.val()||{};
+          const others2 = Object.values(list2).filter(e=> e.uid!==my.uid);
+          if(others2.length>0){
+            quickMatchBtn.click();
+            poolRef.off();
+          }
+        });
+      }
+    });
+  });
+
+  function makeRoomLink(roomId){
+    const base = location.origin + location.pathname.replace(/index\.html$/i,'');
+    return base + '?room=' + roomId;
+  }
+
+  // Join if URL has ?room=
+  (function checkRoomParam(){
+    const params = new URLSearchParams(location.search);
+    const room = params.get('room');
+    if(room){
+      // If online not enabled, ask to enable
+      signInBtn.classList.add('primary');
+      statusLeft.textContent = 'Room link detected. Enter name and Enable Online to join.';
+      createRoomBtn.disabled = true; quickMatchBtn.disabled = true;
+      const tryJoin = async ()=>{
+        if(!FB.user) return;
+        await joinOnlineRoom(room);
+        createRoomBtn.disabled = false; quickMatchBtn.disabled = false;
+      };
+      signInBtn.addEventListener('click', ()=> setTimeout(tryJoin, 100), {once:true});
+    }
+  })();
+
+  async function joinOnlineRoom(roomId){
+    state.roomId = roomId;
+    const roomRef = FB.db.ref('rooms/'+roomId);
+    const snap = await roomRef.get();
+    if(!snap.exists()){ alert('Room not found'); return; }
+    const room = snap.val();
+    const players = Object.values(room.players);
+    // Map players to local structure
+    const mapped = players.map((p,i)=> ({ id: p.uid, uid:p.uid, name:p.name, color:p.color }));
+    setupMatch(MODE.ONLINE, mapped);
+
+    // Restore server state if exists
+    if(room.state){
+      try{
+        const st = JSON.parse(room.state);
+        state.pieces = st.pieces;
+        state.turnIndex = st.turnIndex;
+        state.dice = st.dice;
+        state.chainSix = st.chainSix || 0;
+      }catch(e){}
+    }
+    render();
+
+    // Subscribe to updates
+    roomRef.on('value', s=>{
+      const R = s.val();
+      if(!R) return;
+      const servPlayers = Object.values(R.players||{});
+      // Merge order by color
+      state.players = servPlayers.sort((a,b)=> a.color-b.color).map(p=> ({ id:p.uid, uid:p.uid, name:p.name, color:p.color }));
+      state.turnIndex = R.turnIndex||0;
+      state.dice = R.dice===null ? null : R.dice;
+      state.chainSix = R.chainSix||0;
+      if(R.state){
+        try{
+          const st = JSON.parse(R.state);
+          state.pieces = st.pieces;
+          state.winner = st.winner ? state.players.find(x=> x.id===st.winner) : null;
+        }catch(e){}
+      }
+      render();
+    });
+
+    // Push local changes after each action (hostless)
+    syncGame();
+  }
+
+  function syncGame(){
+    if(state.mode!==MODE.ONLINE || !state.roomId) return;
+    const roomRef = FB.db.ref('rooms/'+state.roomId);
+    roomRef.update({
+      state: JSON.stringify({ pieces: state.pieces, winner: state.winner?.id || null }),
+      turnIndex: state.turnIndex,
+      dice: state.dice===null ? null : state.dice,
+      chainSix: state.chainSix
+    });
+  }
+
+  // ========= UTILS =========
+  function loadScript(src){
+    return new Promise((res,rej)=> {
+      const s = document.createElement('script');
+      s.src = src; s.onload=()=>res(); s.onerror=()=>rej(new Error('Load failed: '+src));
+      document.head.appendChild(s);
+    });
+  }
+  function genId(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,10); }
+  function escapeHtml(s){ return s.replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function blink(el){ el.style.transform='scale(1.05)'; setTimeout(()=> el.style.transform='', 180); }
+
+  // ========= INIT =========
+  function updateSideInfo(){
+    const T = state.players[state.turnIndex];
+    turnLabel.textContent = T ? T.name : '—';
+  }
+  render();
+
+})();
+</script>
+</body>
+</html>
 

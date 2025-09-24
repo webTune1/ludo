@@ -35,7 +35,7 @@ body{
 }
 .brand{ display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px; }
 .logo{ width:28px; height:28px; border-radius:8px; background: conic-gradient(from 230deg, #00e5ff, #7c4dff, #00e5ff); box-shadow: 0 0 16px rgba(0,229,255,.4); }
-.controls{ display:flex; gap:8px; align-items:center; }
+.controls{ display:flex; gap:8px; align-items:center; flex-wrap: wrap; }
 .name{
   min-width:160px; padding:8px 10px; border-radius:10px; border:1px solid #ffffff14; background: var(--panel); color: var(--text); outline:none;
 }
@@ -84,15 +84,21 @@ body{
 .btn.big{ font-size:16px; padding:10px 14px; }
 .btn.ghost{ background: transparent; border-color: transparent; }
 
-/* Switch */
+.badge{
+  padding:7px 10px; border-radius:10px; background: var(--chip); color: var(--muted); font-weight:700;
+}
+
 .switch{ display:flex; align-items:center; gap:8px; }
 
-/* Ludo colors & tokens */
+.overlay{
+  position:absolute; inset:0; display:grid; place-items:center;
+  background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.35));
+  color:#fff; font-weight:800; letter-spacing:.2px;
+}
+.hidden{ display:none !important; }
+
+/* Ludo colors */
 .cG{ background:#2fbe3a; }  /* Green */
 .cY{ background:#f5c400; }  /* Yellow */
 .cB{ background:#1e88e5; }  /* Blue */
 .cR{ background:#e53935; }  /* Red */
-
-.badge{
-  padding:7px 10px; border-radius:10px; background: var(--chip); color: var(--muted); font-weight:700;
-}

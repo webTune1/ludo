@@ -36,13 +36,13 @@ body{
 .brand{ display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px; }
 .logo{ width:28px; height:28px; border-radius:8px; background: conic-gradient(from 230deg, #00e5ff, #7c4dff, #00e5ff); box-shadow: 0 0 16px rgba(0,229,255,.4); }
 .controls{ display:flex; gap:8px; align-items:center; flex-wrap: wrap; }
-.name{
+.name, select{
   min-width:160px; padding:8px 10px; border-radius:10px; border:1px solid #ffffff14; background: var(--panel); color: var(--text); outline:none;
 }
 
 .layout{
   display:grid; gap:10px; padding:0 10px 10px;
-  grid-template-columns: 1fr 300px; grid-template-rows: minmax(520px, 1fr);
+  grid-template-columns: 1fr 300px; grid-template-rows: minmax(560px, 1fr);
 }
 @media (max-width: 1000px){
   .layout{ grid-template-columns: 1fr; grid-template-rows: auto auto; }
@@ -55,7 +55,7 @@ body{
 #board{ width:100%; height:100%; display:block; }
 
 .hud{
-  position:absolute; left:12px; right:12px; bottom:12px; display:flex; gap:8px; justify-content:space-between; align-items:center;
+  position:absolute; left:12px; right:12px; top:12px; display:flex; gap:8px; justify-content:space-between; align-items:center;
   pointer-events:none;
 }
 .hud > *{ pointer-events:auto; }
@@ -84,18 +84,8 @@ body{
 .btn.big{ font-size:16px; padding:10px 14px; }
 .btn.ghost{ background: transparent; border-color: transparent; }
 
-.badge{
-  padding:7px 10px; border-radius:10px; background: var(--chip); color: var(--muted); font-weight:700;
-}
-
-.switch{ display:flex; align-items:center; gap:8px; }
-
-.overlay{
-  position:absolute; inset:0; display:grid; place-items:center;
-  background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.35));
-  color:#fff; font-weight:800; letter-spacing:.2px;
-}
-.hidden{ display:none !important; }
+.badge{ padding:7px 10px; border-radius:10px; background: var(--chip); color: var(--muted); font-weight:700; }
+.switch{ display:flex; gap:8px; align-items:center; }
 
 /* Ludo colors */
 .cG{ background:#2fbe3a; }  /* Green */

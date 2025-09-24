@@ -3,21 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Ludo — Online</title>
+  <title>Ludo Playground</title>
   style.css
 </head>
 <body data-theme="dark">
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true"></div>
-      <span>Ludo — Online</span>
+      <span>Ludo Playground</span>
     </div>
     <div class="controls">
       <input id="nameInput" class="name" type="text" placeholder="Your name" maxlength="16" />
-      <button id="enableBtn" class="btn primary">Enable Online</button>
-      <button id="createRoomBtn" class="btn" disabled>Create Room</button>
-      <button id="copyLinkBtn" class="btn" disabled>Copy Link</button>
-      <button id="leaveBtn" class="btn ghost" disabled>Leave</button>
+      <button id="localBtn" class="btn primary">Local (2–4)</button>
+      <button id="aiBtn" class="btn">VS AI</button>
       <button id="themeBtn" class="btn ghost" title="Toggle theme">🌓</button>
     </div>
   </header>
@@ -25,58 +23,64 @@
   <main class="layout">
     <section class="board-wrap">
       <canvas id="board"></canvas>
-
       <div class="hud">
-        <div id="roomBadge" class="badge">Room: —</div>
-        <div class="row">
-          <button id="rollBtn" class="btn big" disabled>Roll 🎲</button>
-          <div id="diceBadge" class="badge">—</div>
+        <div class="left">
           <div id="turnBadge" class="badge">—</div>
         </div>
+        <div class="right">
+          <button id="rollBtn" class="btn big" disabled>Roll 🎲</button>
+          <div id="diceBadge" class="badge">—</div>
+        </div>
       </div>
-
-      <div id="overlayMsg" class="overlay hidden">Waiting for opponent… Share your room link.</div>
     </section>
 
     <aside class="side">
       <div class="panel">
-        <div class="row"><span>Status</span><b id="statusLbl">Offline</b></div>
-        <div class="row"><span>Me</span><b id="meLbl">—</b></div>
-        <div class="row"><span>Opponent</span><b id="opLbl">—</b></div>
-        <div class="row"><span>Room</span><b id="roomLbl">—</b></div>
+        <div class="row"><span>Mode</span><b id="modeLbl">—</b></div>
+        <div class="row"><span>Players</span><b id="playersLbl">—</b></div>
+        <div class="row"><span>Turn</span><b id="turnLbl">—</b></div>
       </div>
+
       <div class="panel">
-        <button id="resetBtn" class="btn" disabled>Reset Match</button>
-        <label class="switch">
-          <input id="soundsChk" type="checkbox" checked />
-          <span>Sound</span>
-        </label>
+        <div class="row">
+          <label>Board</label>
+          <select id="boardTheme">
+            <option value="classic">Classic Grid</option>
+            <option value="minimal">Minimal</option>
+          </select>
+        </div>
+        <div class="row">
+          <label class="switch">
+            <input id="safeChk" type="checkbox" checked />
+            <span>Show Safe Tiles</span>
+          </label>
+        </div>
+        <div class="row">
+          <label class="switch">
+            <input id="blockChk" type="checkbox" />
+            <span>Blockade Rule</span>
+          </label>
+        </div>
+        <div class="row">
+          <label class="switch">
+            <input id="soundChk" type="checkbox" checked />
+            <span>Sound</span>
+          </label>
+        </div>
+        <div class="row">
+          <button id="restartBtn" class="btn">Restart Match</button>
+        </div>
       </div>
-      <div class="panel subtle" id="tips">
-        How to play online:
-        <ol>
-          <li>Enter your name → <b>Enable Online</b></li>
-          <li><b>Create Room</b> → <b>Copy Link</b> → share with your friend</li>
-          <li>When your friend opens the link and enables online, the match starts.</li>
-        </ol>
-      </div>
+
+      <div class="panel subtle" id="status">Ready.</div>
     </aside>
   </main>
 
   <footer class="bottombar">
-    <div>Click <b>Roll</b>, then click one of your tokens to move.</div>
+    <div>Roll, then click a token to move. 6 gives an extra turn (three 6s ends turn).</div>
     <div>© Ludo</div>
   </footer>
 
-  <!-- Firebase config (you fill this) -->
-  firebase-config.js</script>
-
-  <!-- Firebase SDK (Compat for simplicity) -->
-  https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js</script>
-  <script src="https://www.gstatic.com0.12.2/firebase-auth-compat.js</script>
-  https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js</script>
-
-  <!-- App -->
   app.js</script>
 </body>
 </html>
